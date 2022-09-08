@@ -1,3 +1,4 @@
+import { TypeOrmExModule } from '@app/typeorm/typeorm-ex.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from '../users/repository/users.repository';
@@ -8,7 +9,7 @@ import { PermissionService } from './permission.service';
 import { PermissionRepository } from './repository/permission.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PermissionRepository, UserRepository])],
+  imports: [TypeOrmExModule.forCustomRepository([PermissionRepository, UserRepository])],
   providers: [PermissionService, UsersService],
   controllers: [PermissionController],
   exports: [PermissionService],

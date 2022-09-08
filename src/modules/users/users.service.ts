@@ -8,7 +8,7 @@ import { UserRepository } from './repository/users.repository';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly users: UserRepository) {}
+  constructor(private users: UserRepository) {}
 
   public async getUserEntityByUsername(username: string): Promise<User | undefined> {
     return await this.users.findOne({ where: { username: username } });
