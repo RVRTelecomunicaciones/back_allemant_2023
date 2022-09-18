@@ -23,6 +23,7 @@ import { TipoDocumentosModule } from './modules/tipo-documentos/tipo-documentos.
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
 import { getEnvPath } from 'processors/helper/env.helper';
+import { ModuleModule } from './modules/module/module.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
 @Module({
@@ -52,6 +53,7 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
     InvolucradoNaturalesModule,
     InvolucradoJuridicosModule,
     TipoDocumentosModule,
+    ModuleModule,
   ],
 
   providers: [],

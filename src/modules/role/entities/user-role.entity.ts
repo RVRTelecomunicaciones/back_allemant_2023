@@ -1,7 +1,7 @@
 import { SharedEntity } from '@app/modules/shared/entities/shared.entity';
 import { Column, Entity } from 'typeorm';
 
-@Entity('user_has_role')
+@Entity('user_has_rolewxcc')
 export class RoleAccessEntity extends SharedEntity {
   @Column({
     type: 'int',

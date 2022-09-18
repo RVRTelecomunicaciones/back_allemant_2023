@@ -23,6 +23,5 @@ export class Permission extends SharedEntity {
   icon: string;
 
   @ManyToMany(() => Role, (role) => role.permissions)
-  @JoinTable()
   roles: Role[];
 }

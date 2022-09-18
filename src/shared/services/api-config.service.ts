@@ -72,7 +72,7 @@ export class ApiConfigService {
       __dirname + '/../../modules/**/**/*.entity{.ts,.js}',
       __dirname + '/../../modules/**/**/*.view-entity{.ts,.js}',
     ];
-    let migrations = [__dirname + '/../../database/migrations/*{.ts,.js}'];
+    let migrations = [__dirname + '/../../database/**/*{.ts,.js}'];
 
     if (module.hot) {
       const entityContext = require.context('./../../modules', true, /\.entity\.ts$/);

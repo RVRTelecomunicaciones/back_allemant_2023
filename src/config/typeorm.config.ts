@@ -1,9 +1,10 @@
-import type { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import type { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from '@app/snake-naming.strategy';
 import { UserSubscriber } from '@app/entity-subscribers/user-subscriber';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DataSource } from 'typeorm';
+import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { getEnvPath } from '@app/processors/helper/env.helper';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
 export const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
 
@@ -26,18 +27,26 @@ export const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
   inject: [ConfigService],
 }; */
 
-const typeOrmAsyncConfig = new DataSource({
+export const typeOrmConfig = new DataSource({
   type: 'mysql',
   host: 'localhost',
   port: 3306,
   username: 'root',
   password: '123456',
-  database: 'allemant',
-  entities: ['src/modules/**/**/*.entity.ts'],
+  database: 'dbsgi',
+  synchronize: false,
+  dropSchema: false,
+  //entities: ['src/modules/**/*.entity.{js,ts}'],
+  //entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+
+  entities: [__dirname + '/../**/*.entity.{js,ts}'],
+
+  logging: true,
+  migrationsRun: false,
+  migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
+
   migrationsTableName: 'migrations',
-  migrations: ['src/database/migrations/*{.ts,.js}'],
+  //migrations: ['src/database/migrations/*{.ts,.js}'],
   namingStrategy: new SnakeNamingStrategy(),
   subscribers: [UserSubscriber],
 });
-
-export default typeOrmAsyncConfig;

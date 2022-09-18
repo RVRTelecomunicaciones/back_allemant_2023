@@ -71,7 +71,7 @@ export class UsersService {
     }
     return null;
   }
-  async can(user: User, action: string): Promise<boolean> {
+  /* async can(user: User, action: string): Promise<boolean> {
     if (action == 'except') {
       return true;
     }
@@ -84,5 +84,5 @@ export class UsersService {
       return true;
     }
     return false;
-  }
+  } */
 }

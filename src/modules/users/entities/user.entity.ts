@@ -7,12 +7,16 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   Unique,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Role } from '@app/modules/role/entities/role.entity';
+import { UserModule } from '@app/modules/module/entities/module-user.entity';
 
 @Entity('user')
 @Unique('username_mobile_email_unique', ['username', 'mobile', 'email'])
@@ -70,10 +74,30 @@ export class User extends SharedEntity {
   @Column({ select: false, default: false })
   isActivated?: boolean;
 
- 
-  @ManyToOne(() => Role, { eager: true })
+  /* @ManyToOne(() => Role, { eager: true })
   @JoinColumn({ name: 'role_id' })
-  role: Role;
+  role: Role; */
+
+  @OneToMany(() => UserModule, (userToModule) => userToModule.user, {
+    cascade: true,
+  })
+  modules: UserModule[];
+
+  @ManyToMany(() => Role, (role) => role.users, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  @JoinTable({
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id',
+    },
+  })
+  roles: Role[];
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -32,17 +32,15 @@ export class Role extends SharedEntity {
   })
   status: StatusEnum;
 
-  @OneToMany(() => User, (user) => user.role)
+  @ManyToMany(() => User, (user) => user.roles)
+  @JoinTable()
   users: User[];
 
-  // @ManyToMany(() => Permission, (permission) => permission.roles)
-  // permissions: Permission[];
   @ManyToMany(() => Permission, (permission) => permission.roles, {
-    eager: true,
-    cascade: true,
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
   })
   @JoinTable({
-    name: 'role_permission',
     joinColumn: {
       name: 'role_id',
       referencedColumnName: 'id',
