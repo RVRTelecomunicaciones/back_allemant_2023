@@ -78,10 +78,12 @@ export class User extends SharedEntity {
   @JoinColumn({ name: 'role_id' })
   role: Role; */
 
-  @OneToMany(() => UserModule, (userToModule) => userToModule.user, {
-    cascade: true,
+  /* @OneToMany(() => UserModule, (userToModule) => userToModule.user, {
   })
-  modules: UserModule[];
+  modules: UserModule[]; */
+
+  @OneToMany(() => UserModule, (userToModule) => userToModule.user, {})
+  moduleslevels: UserModule[];
 
   @ManyToMany(() => Role, (role) => role.users, {
     onDelete: 'NO ACTION',
