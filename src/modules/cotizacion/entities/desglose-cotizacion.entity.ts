@@ -2,7 +2,7 @@ import { SharedEntity } from '@app/modules/shared/entities/shared.entity';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { Cotizacion } from './cotizacion.entity';
 
-@Entity('co_desglose')
+@Entity('co_desglose_cotizacion')
 export class DesgloseCotizacion extends SharedEntity {
   @Index()
   @Column({

@@ -17,20 +17,20 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Role } from '@app/modules/role/entities/role.entity';
 import { UserModule } from '@app/modules/module/entities/module-user.entity';
+import { ModuleLevelUser } from '@app/modules/module-level-user/entities/module-level-user.entity';
 
 @Entity('user')
-@Unique('username_mobile_email_unique', ['username', 'mobile', 'email'])
-@Unique('username_deleted', ['username', 'deletedAt'])
+@Unique('mobile_email_unique', ['mobile', 'email'])
 @Unique('email_deleted', ['email', 'deletedAt'])
 @Unique('mobile_deleted', ['mobile', 'deletedAt'])
 export class User extends SharedEntity {
+  @Column({ nullable: true })
+  name: string;
+
   @Index()
   @Column()
   email: string;
 
-  @Index()
-  @Column()
-  username: string;
   @Index()
   @Column({
     type: 'varchar',
@@ -39,19 +39,15 @@ export class User extends SharedEntity {
     name: 'mobile',
   })
   mobile: string;
-  @Exclude()
+
   @Column({
     type: 'varchar',
     length: 100,
     name: 'password',
-    select: false,
   })
   password: string;
 
-  @Column({ nullable: true })
-  name: string;
-
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'profile_photo' })
   profilePhoto: string;
 
   @Column({
@@ -68,22 +64,24 @@ export class User extends SharedEntity {
   })
   updated_by: string;
 
-  @Column({ select: false })
+  @Column({ select: false, name: 'activation_link' })
   activationLink: string;
 
-  @Column({ select: false, default: false })
+  @Column({ select: false, default: false, name: 'is_activated' })
   isActivated?: boolean;
 
   /* @ManyToOne(() => Role, { eager: true })
   @JoinColumn({ name: 'role_id' })
   role: Role; */
 
-  /* @OneToMany(() => UserModule, (userToModule) => userToModule.user, {
-  })
-  modules: UserModule[]; */
-
   @OneToMany(() => UserModule, (userToModule) => userToModule.user, {})
-  moduleslevels: UserModule[];
+  modules: UserModule[];
+
+  @OneToMany(() => ModuleLevelUser, (mleveluser) => mleveluser.user)
+  public moduleLevelConn!: ModuleLevelUser[];
+
+  /*   @OneToMany(() => UserModule, (userToModule) => userToModule.user, {})
+  moduleslevels: UserModule[]; */
 
   @ManyToMany(() => Role, (role) => role.users, {
     onDelete: 'NO ACTION',

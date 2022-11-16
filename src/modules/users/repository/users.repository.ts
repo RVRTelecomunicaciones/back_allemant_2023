@@ -29,4 +29,15 @@ export class UserRepository extends Repository<User> {
 
     return await query.getMany();
   }
+
+  async findOneByEmail(email: string): Promise<User> {
+    return await this.findOneByEmail(email);
+  }
+  async getUserByEmail(email: string) {
+    return this.findOneOrFail({ where: { email } });
+  }
+
+  async signUp(name: string, email: string, password: string, activationLink: string): Promise<User> {
+    return await this.save({ name, email, password, activationLink });
+  }
 }

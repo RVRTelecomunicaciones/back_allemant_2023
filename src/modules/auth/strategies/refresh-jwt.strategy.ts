@@ -13,7 +13,7 @@ import { ApiConfigService } from '@app/shared/services/api-config.service';
 
 @Injectable()
 export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-  constructor(config: ConfigService,  configService: ApiConfigService) {
+  constructor(configService: ApiConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -24,7 +24,7 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
 
   async validate(req: Request, payload: any) {
     // eslint-disable-next-line prefer-const
-    let { iat, sub, exp, ...user } = payload;
+    /* let { iat, sub, exp, ...user } = payload; */
     /* user = this.authService.validateRefreshToken({
       user: payload,
       refreshToken: req.cookies['refreshToken'],

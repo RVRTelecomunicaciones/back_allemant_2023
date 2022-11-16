@@ -1,15 +1,36 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { TokensService } from '../tokens/tokens.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
 import { RefreshJwtAuthGuard } from './guards/refresh-jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiConfigService } from '@app/shared/services/api-config.service';
+import { LoginUserDto } from '../users/dto/login-user.dto';
+import { LoginPayloadDto } from './dto/LoginPayloadDto';
+import { Request, Response } from 'express';
+import { User } from '../users/entities/user.entity';
+import { JwtPayload } from './strategies/jwt-payload';
+import { JwtService } from '@nestjs/jwt';
+import { IToken } from '../tokens/interfaces/token.interface';
 
 @ApiTags('AUTENTICACIÓN')
 @Controller('auth/')
+@UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -17,30 +38,22 @@ export class AuthController {
     private readonly apiConfig: ApiConfigService
   ) {}
 
-  @UseGuards(LocalAuthGuard)
+  //@UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Res({ passthrough: true }) response: Response, @Req() req) {
-    console.log('user');
-    console.log(req);
+  async login(@Body() userLoginDto: LoginUserDto) {
+    const user = await this.authService.validateUser(userLoginDto);
+    const tokens: IToken = await this.tokenService.generateJwtTokens(user);
 
-    const user = await this.authService.login(req.user);
+    await this.tokenService.updateOrCreate(user.id, tokens.refreshToken);
 
-    console.log('user');
-    console.log(user);
-    response.cookie('refresh Token', user.refreshToken, {
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-      httpOnly: true,
-    });
-    return user;
+    return {
+      ...tokens,
+    };
   }
 
   @Post('register')
   async register(@Res({ passthrough: true }) response: Response, @Body() dto: CreateUserDto) {
     const user = await this.authService.register(dto);
-    response.cookie('refreshToken', user.refreshToken, {
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-      httpOnly: true,
-    });
     return user;
   }
 
@@ -50,12 +63,17 @@ export class AuthController {
     response.redirect(this.apiConfig.urlFrontend);
   }
 
-  @UseGuards(RefreshJwtAuthGuard)
+  @Post('refresh')
+  async refresh(@Body() body) {
+    return await this.authService.validateRefreshToken(body.refresh_token);
+  }
+
+  /* @UseGuards(RefreshJwtAuthGuard)
   @Get('refresh')
   refresh(@Req() req, @Body() body) {
     console.log(req);
     console.log(body);
-  }
+  } */
 
   @Get('verify')
   @HttpCode(HttpStatus.OK)

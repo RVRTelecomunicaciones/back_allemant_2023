@@ -7,13 +7,11 @@ import { Repository } from 'typeorm';
 import { CreateDesgloseDto } from './dto/create-desglose.dto';
 import { UpdateDesgloseDto } from './dto/update-desglose.dto';
 import { Desglose } from './entities/desglose.entity';
+import { DesgloseRepository } from './repository/desglose.repository';
 
 @Injectable()
-export class DesglosesService {
-  constructor(
-    @InjectRepository(Desglose)
-    private repository: Repository<Desglose>
-  ) {}
+export class DesgloseService {
+  constructor(private repository: DesgloseRepository) {}
 
   async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Desglose>> {
     const queryBuilder = this.repository.createQueryBuilder('co_desglose');

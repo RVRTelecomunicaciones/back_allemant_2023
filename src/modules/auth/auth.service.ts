@@ -1,4 +1,11 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TokensService } from '../tokens/tokens.service';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
@@ -8,6 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { v4 } from 'uuid';
 import { EmailService } from '@app/processors/helper/mail/helper.service.email';
 import { LoginUserDto } from '../users/dto/login-user.dto';
+import { UserNotFoundException } from '@app/exceptions/user-not-found.exception';
 
 @Injectable()
 export class AuthService {
@@ -16,75 +24,109 @@ export class AuthService {
     private tokenService: TokensService,
     private mailService: EmailService
   ) {}
-  async validateUser(dto: LoginUserDto): Promise<any> {
-    console.log(dto);
-
-    const user = await this.userService.findByCondition({
-      select: ['id', 'name', 'username', 'email', 'password', 'isActivated'],
-      where: { username: dto.username },
+  async login(user: User) {
+    const tokens: IToken = await this.tokenService.generateJwtTokens(user);
+    await this.tokenService.updateOrCreate(user.id, tokens.refreshToken);
+    return {
+      user,
+      ...tokens,
+    };
+  }
+  async validateUser(userLoginDto: LoginUserDto): Promise<User> {
+    /* const user = await this.userService.findByCondition({
+      select: ['id', 'name', 'email', 'password', 'isActivated'],
+      where: { email: dto.email },
+    }); */
+    const user = await this.userService.findOne({
+      email: userLoginDto.email,
     });
 
     if (!user) return null;
 
-    const isPassEqual = await bcrypt.compare(dto.password, user.password);
+    const isPassEqual = await bcrypt.compare(userLoginDto.password, user.password);
     console.log(isPassEqual);
 
-    if (!isPassEqual) return null;
+    if (!isPassEqual) {
+      throw new UserNotFoundException();
+    }
 
-    const { password, ...result } = user;
-
-    console.log('MYRESULT');
-    console.log(user);
-
-    return result;
+    return user;
   }
-  async validateRefreshToken(user, refreshToken: string) {
-    console.log('tokens');
 
-    const token = this.tokenService.findOne({ refreshToken });
+  async validateRefreshToken(refreshToken: string) {
+    const payload = await this.tokenService.verifyJwtRefresh(refreshToken);
+    console.log('payload');
+    console.log(payload);
 
+    const user = await this.getUserByRefresh(refreshToken, payload.email);
+
+    console.log('validateRefreshToken');
+
+    const token = await this.tokenService.generateAccessJwtTokens(user);
+    return {
+      email: user.email,
+      ...token,
+    };
+
+    /* 
+    const token = this.tokenService.findOneRefreshToken({ validateRefreshToken });
+    console.log(token);
     if (!token) throw new UnauthorizedException();
 
     const tokens: IToken = this.tokenService.generateJwtTokens(user);
     await this.tokenService.updateOrCreate(user.id, tokens.refreshToken);
-    console.log('tokens');
-    console.log('MYRESULT');
-    console.log(tokens);
 
     return {
-      user,
       ...tokens,
-    };
+    }; */
   }
-  async login(user: User) {
-    /*     const { refreshToken, user } = refreshTokenDto;
-     */ /*     const normalizedIdentifier = user.username.toLowerCase();
-     */
-    console.log('Lllego tokens');
+
+  async getUserByRefresh(refresh_token, email) {
+    const user = await this.findByEmail(email);
+
+    console.log('user');
     console.log(user);
-    const tokens: IToken = await this.tokenService.generateJwtTokens(user);
-    await this.tokenService.updateOrCreate(user.id, tokens.refreshToken);
-    console.log(tokens);
-    return {
-      user,
-      ...tokens,
-    };
+    if (!user) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    }
+    const token = await this.tokenService.findOne(user.id);
+    console.log('user refreshtoken');
+    console.log(token.refreshToken);
+    console.log(refresh_token);
+    /*  const is_equal = await bcrypt.compare(this.reverse(refresh_token), token.refreshToken);
+    console.log('user is_equal');
+    console.log(is_equal);
+    if (!is_equal) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    } */
+
+    return user;
+  }
+
+  async findByEmail(email: string) {
+    console.log('user');
+    console.log(email);
+    return await this.userService.findOne({
+      email: email,
+    });
+  }
+  private reverse(s) {
+    return s.split('').reverse().join('');
   }
 
   async register(createUserDto: CreateUserDto) {
-    const candidate = await this.userService.getUserEntityByUsername(createUserDto.username);
+    const userExist = await this.userService.getUserEntityByEmail(createUserDto.email);
 
-    if (candidate) {
+    if (userExist) {
       throw new ConflictException('Un usuario con este correo electrónico ya existe');
     }
 
-    const activationLink = v4();
-    const hashPassword = await bcrypt.hash(createUserDto.password, 10);
+    /*     const activationLink = v4();
+     */ const hashPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    const { password, ...userData } = await this.userService.create({
+    const { password, ...userData } = await this.userService.signUp({
       ...createUserDto,
       password: hashPassword,
-      activationLink,
     });
 
     const tokens: IToken = this.tokenService.generateJwtTokens(userData);
@@ -96,9 +138,30 @@ export class AuthService {
     /*     await this.mailService.sendVerifyEmailSendGrid(createUserDto.username, createUserDto.email, activationLink);
      */
     return {
-      user: userData,
       ...tokens,
     };
+
+    /*   const user = new User();
+    user.name = name;
+    user.email = email;
+    user.password = hashPassword;
+    user.activationLink = activationLink;
+
+    try {
+      const createdUser = this.userService.signUp(user);
+
+      const tokens: IToken = this.tokenService.generateJwtTokens(createdUser);
+    console.log(tokens);
+    await this.tokenService.create(createdUser., tokens.refreshToken);
+
+      return {
+        accessToken,
+        email,
+        emailValidationCode: user.emailValidationCode,
+      };
+    } catch (e) {
+      throw new InternalServerErrorException(e.message);
+    } */
   }
 
   async activation(activationLink: string) {

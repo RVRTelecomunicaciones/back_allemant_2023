@@ -14,13 +14,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
-import { DesglosesService } from './desgloses.service';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { DesgloseService } from './desglose.service';
 import { CreateDesgloseDto } from './dto/create-desglose.dto';
 import { UpdateDesgloseDto } from './dto/update-desglose.dto';
 import { Desglose } from './entities/desglose.entity';
@@ -30,7 +25,7 @@ import { Desglose } from './entities/desglose.entity';
 @ApiAuth()
 @Controller('desgloses/')
 export class DesglosesController {
-  constructor(private service: DesglosesService) {}
+  constructor(private service: DesgloseService) {}
 
   @ApiOperation({
     summary: 'Consultar lista de Desgloses',
@@ -44,9 +39,7 @@ export class DesglosesController {
   })
   @Get('list')
   @HttpCode(HttpStatus.OK)
-  async listar(
-    @Query() pageOptionsDto: PageOptionsDto,
-  ): Promise<PageDto<Desglose>> {
+  async listar(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<Desglose>> {
     return this.service.findAll(pageOptionsDto);
   }
 
@@ -76,7 +69,7 @@ export class DesglosesController {
   @Patch(':id')
   async modifyDesgloseById(
     @Param('id', new ParseIntPipe()) id: number,
-    @Body() updateDto: UpdateDesgloseDto,
+    @Body() updateDto: UpdateDesgloseDto
   ): Promise<string> {
     return await this.service.updateDesgloseById(id, updateDto);
   }
@@ -91,9 +84,7 @@ export class DesglosesController {
   })
   @HttpCode(HttpStatus.OK)
   @Delete(':id')
-  async destroyAreaById(
-    @Param('id', new ParseIntPipe()) id: number,
-  ): Promise<string> {
+  async destroyAreaById(@Param('id', new ParseIntPipe()) id: number): Promise<string> {
     return await this.service.deleteDesglose(id);
   }
 }

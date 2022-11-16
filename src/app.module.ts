@@ -10,7 +10,6 @@ import { AreasModule } from './modules/areas/areas.module';
 import { TipoServiciosModule } from './modules/tipo-servicios/tipo-servicios.module';
 import { TipoCotizacionesModule } from './modules/tipo-cotizaciones/tipo-cotizaciones.module';
 import { EstadoCotizacionesModule } from './modules/estado-cotizaciones/estado-cotizaciones.module';
-import { DesglosesModule } from './modules/desgloses/desgloses.module';
 import { MonedasModule } from './modules/monedas/monedas.module';
 import { EstadoCoordinacionesModule } from './modules/estado-coordinaciones/estado-coordinaciones.module';
 import { ServiciosModule } from './modules/servicios/servicios.module';
@@ -26,6 +25,10 @@ import { getEnvPath } from 'processors/helper/env.helper';
 import { ModuleModule } from './modules/module/module.module';
 import { ModuleLevelsModule } from './modules/module-levels/module-levels.module';
 import { ModuleLevelUserModule } from './modules/module-level-user/module-level-user.module';
+import { DesgloseModule } from './modules/desglose/desglose.module';
+import { InformeTasacionModule } from './modules/informe-tasacion/informe-tasacion.module';
+import { TipoUsoModule } from './modules/tipo-uso/tipo-uso.module';
+import { InformeTipousoModule } from './modules/informe-tipouso/informe-tipouso.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
 @Module({
@@ -37,15 +40,15 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
       inject: [ApiConfigService],
     }),
     UsersModule,
-    //AuthModule,
+    AuthModule,
     TokensModule,
     HelperModule,
+    DesgloseModule,
     CotizacionModule,
     AreasModule,
     TipoServiciosModule,
     TipoCotizacionesModule,
     EstadoCotizacionesModule,
-    DesglosesModule,
     MonedasModule,
     EstadoCoordinacionesModule,
     ServiciosModule,
@@ -58,6 +61,9 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/envs`);
     ModuleModule,
     ModuleLevelsModule,
     ModuleLevelUserModule,
+    InformeTasacionModule,
+    TipoUsoModule,
+    InformeTipousoModule,
   ],
 
   providers: [],
